@@ -3,12 +3,14 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider, createTheme } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 
-// الصفحات
+// Pages
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import DoctorsList from './pages/DoctorsList';
 import DoctorDetails from './pages/DoctorDetails';
+import Booking from './pages/Booking';
+import MyAppointments from './pages/MyAppointments';
 import Navbar from './components/Navbar';
 
 const theme = createTheme({
@@ -35,6 +37,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/doctors" element={<DoctorsList />} />
             <Route path="/doctor/:id" element={<DoctorDetails />} />
+            <Route path="/book/:doctorId" element={<Booking />} />
+            <Route path="/appointments" element={<MyAppointments />} />
           </Routes>
         </Router>
       </AuthProvider>

@@ -34,9 +34,14 @@ export default function Navbar() {
                 </Button>
 
                 {currentUser && (
-                    <Button color="inherit" onClick={() => navigate('/appointments')}>
-                        مواعيدي
-                    </Button>
+                    <>
+                        <Button color="inherit" onClick={() => navigate('/doctors')}>
+                            Doctors
+                        </Button>
+                        <Button color="inherit" onClick={() => navigate('/appointments')}>
+                            My Appointments
+                        </Button>
+                    </>
                 )}
                 <Box>
                     {currentUser ? (
