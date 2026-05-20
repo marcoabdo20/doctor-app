@@ -8,6 +8,8 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { LocalHospital, CalendarMonth, Star } from '@mui/icons-material';
+import { seedSpecialties } from '../utils/seedSpecialties';
+
 
 export default function Home() {
   const { currentUser, userRole } = useAuth();
@@ -84,6 +86,17 @@ export default function Home() {
           </Paper>
         </Box>
       </Container>
+
+      <Box sx={{ textAlign: 'center', py: 4 }}>
+  <Button 
+    variant="contained" 
+    size="large"
+    onClick={() => navigate('/doctors')}
+    sx={{ px: 4, py: 1.5 }}
+  >
+    استكشف جميع الأطباء
+  </Button>
+</Box>
 
       {/* حالة المستخدم */}
       {currentUser && (

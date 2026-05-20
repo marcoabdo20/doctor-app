@@ -7,18 +7,15 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Home from './pages/Home';
+import DoctorsList from './pages/DoctorsList';
+import DoctorDetails from './pages/DoctorDetails';
 import Navbar from './components/Navbar';
 
-// إنشاء ثيم عربي
 const theme = createTheme({
-  direction: 'rtl', // دعم اللغة العربية
+  direction: 'rtl',
   palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#2e7d32',
-    },
+    primary: { main: '#1976d2' },
+    secondary: { main: '#2e7d32' },
   },
   typography: {
     fontFamily: '"Segoe UI", "Roboto", "Arial", sans-serif',
@@ -36,6 +33,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/doctors" element={<DoctorsList />} />
+            <Route path="/doctor/:id" element={<DoctorDetails />} />
           </Routes>
         </Router>
       </AuthProvider>
