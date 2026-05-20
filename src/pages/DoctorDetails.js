@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useReviews } from '../hooks/useReviews';
+import ReviewCard from '../components/ReviewCard';
+import ReviewForm from '../components/ReviewForm';
 import {
   Container,
   Box,
@@ -17,28 +21,38 @@ import {
   CircularProgress,
   Alert,
   Tabs,
-  Tab
+  Tab,
 } from '@mui/material';
-import { LocationOn, AttachMoney, AccessTime } from '@mui/icons-material';
+import {
+  LocationOn,
+  AttachMoney,
+  AccessTime,
+  CalendarMonth,
+  Star,
+  ArrowBack,
+} from '@mui/icons-material';
 
 export default function DoctorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
+
+  const { reviews, loading: reviewsLoading, averageRating, refresh } = useReviews(id);
 
   useEffect(() => {
     async function fetchDoctor() {
       try {
         const docRef = doc(db, 'doctors', id);
         const docSnap = await getDoc(docRef);
-        
+
         if (docSnap.exists()) {
           setDoctor({ id: docSnap.id, ...docSnap.data() });
         } else {
-          setError('الطبيب غير موجود');
+          setError('Doctor not found');
         }
       } catch (err) {
         setError(err.message);
@@ -49,6 +63,38 @@ export default function DoctorDetails() {
 
     fetchDoctor();
   }, [id]);
+
+  const getDayName = (dateString) => {
+    const days = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ];
+    const date = new Date(dateString);
+    return days[date.getDay()];
+  };
+
+  const getNext7Days = () => {
+    const days = [];
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      days.push({
+        value: date.toISOString().split('T')[0],
+        label: date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+        }),
+      });
+    }
+    return days;
+  };
 
   if (loading) {
     return (
@@ -70,7 +116,16 @@ export default function DoctorDetails() {
 
   return (
     <Container sx={{ py: 4 }}>
-      {/* معلومات الطبيب الأساسية */}
+      {/* زر الرجوع */}
+      <Button
+        startIcon={<ArrowBack />}
+        onClick={() => navigate('/doctors')}
+        sx={{ mb: 2 }}
+      >
+        Back to Doctors
+      </Button>
+
+      {/* معلومات الطبيب */}
       <Paper elevation={2} sx={{ p: 4, mb: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={3}>
@@ -80,45 +135,43 @@ export default function DoctorDetails() {
               sx={{ width: 200, height: 200, mx: 'auto' }}
             />
           </Grid>
-          
+
           <Grid item xs={12} md={9}>
             <Typography variant="h4" gutterBottom>
               {doctor.name}
             </Typography>
-            
-            <Chip 
-              label={doctor.specialty} 
-              color="primary" 
-              sx={{ mb: 2 }}
-            />
-            
+
+            <Chip label={doctor.specialty} color="primary" sx={{ mb: 2 }} />
+
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <Rating value={doctor.rating || 0} precision={0.1} readOnly />
+              <Rating
+                value={averageRating || doctor.rating || 0}
+                precision={0.1}
+                readOnly
+              />
               <Typography sx={{ ml: 1 }}>
-                {doctor.rating} ({doctor.reviewsCount} تقييم)
+                {averageRating || doctor.rating || 0} ({reviews.length || doctor.reviewsCount || 0} reviews)
               </Typography>
             </Box>
-            
+
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <LocationOn sx={{ color: 'text.secondary', ml: 0.5 }} />
-              <Typography color="text.secondary">
-                {doctor.location}
-              </Typography>
+              <LocationOn sx={{ color: 'text.secondary', mr: 0.5 }} />
+              <Typography color="text.secondary">{doctor.location}</Typography>
             </Box>
-            
+
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AttachMoney sx={{ color: 'success.main', ml: 0.5 }} />
+              <AttachMoney sx={{ color: 'success.main', mr: 0.5 }} />
               <Typography color="success.main" variant="h6">
-                {doctor.price} جنيه للكشف
+                {doctor.price} EGP per visit
               </Typography>
             </Box>
-            
-            <Button 
-              variant="contained" 
+
+            <Button
+              variant="contained"
               size="large"
               onClick={() => navigate(`/book/${doctor.id}`)}
             >
-              احجز موعد الآن
+              Book Appointment
             </Button>
           </Grid>
         </Grid>
@@ -126,71 +179,88 @@ export default function DoctorDetails() {
 
       {/* التبويبات */}
       <Paper elevation={2}>
-        <Tabs 
-          value={activeTab} 
+        <Tabs
+          value={activeTab}
           onChange={(e, newValue) => setActiveTab(newValue)}
           centered
         >
-          <Tab label="نبذة عن الطبيب" />
-          <Tab label="مواعيد العمل" />
-          <Tab label="التقييمات" />
+          <Tab label="About" />
+          <Tab label="Schedule" />
+          <Tab label={`Reviews (${reviews.length})`} />
         </Tabs>
 
         <Box sx={{ p: 3 }}>
+          {/* About Tab */}
           {activeTab === 0 && (
-            <Typography>
-              {doctor.bio || 'لا توجد نبذة متوفرة'}
+            <Typography sx={{ lineHeight: 1.8 }}>
+              {doctor.bio || 'No biography available.'}
             </Typography>
           )}
 
+          {/* Schedule Tab */}
           {activeTab === 1 && (
             <Box>
-              {doctor.availability && Object.entries(doctor.availability).map(([day, times]) => (
-                <Box key={day} sx={{ mb: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    {translateDay(day)}
-                  </Typography>
-                  {times.length > 0 ? (
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      {times.map(time => (
-                        <Chip 
-                          key={time} 
-                          label={time} 
-                          icon={<AccessTime />}
-                          color="primary"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Box>
-                  ) : (
-                    <Typography color="text.secondary">لا يوجد مواعيد</Typography>
-                  )}
-                </Box>
-              ))}
+              {doctor.availability &&
+                Object.entries(doctor.availability).map(([day, times]) => (
+                  <Box key={day} sx={{ mb: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{ textTransform: 'capitalize' }}>
+                      {day}
+                    </Typography>
+                    {times.length > 0 ? (
+                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        {times.map((time) => (
+                          <Chip
+                            key={time}
+                            label={time}
+                            icon={<AccessTime />}
+                            color="primary"
+                            variant="outlined"
+                          />
+                        ))}
+                      </Box>
+                    ) : (
+                      <Typography color="text.secondary">No available times</Typography>
+                    )}
+                  </Box>
+                ))}
             </Box>
           )}
 
+          {/* Reviews Tab */}
           {activeTab === 2 && (
-            <Typography color="text.secondary">
-              سيتم إضافة التقييمات قريباً...
-            </Typography>
+            <Box>
+              {/* نموذج التقييم */}
+              {currentUser && (
+                <ReviewForm
+                  doctorId={doctor.id}
+                  doctorName={doctor.name}
+                  onSuccess={refresh}
+                />
+              )}
+
+              {/* قائمة التقييمات */}
+              {reviewsLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : reviews.length === 0 ? (
+                <Alert severity="info">
+                  No reviews yet. Be the first to review!
+                </Alert>
+              ) : (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Patient Reviews
+                  </Typography>
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </Box>
+              )}
+            </Box>
           )}
         </Box>
       </Paper>
     </Container>
   );
-}
-
-// ترجمة أيام الأسبوع
-function translateDay(day) {
-  const days = {
-    saturday: 'السبت',
-    sunday: 'الأحد',
-    monday: 'الإثنين',
-    tuesday: 'الثلاثاء',
-    wednesday: 'الأربعاء',
-    thursday: 'الخميس',
-    friday: 'الجمعة'
-  };
-  return days[day] || day;
 }

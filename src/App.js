@@ -12,6 +12,7 @@ import DoctorDetails from './pages/DoctorDetails';
 import Booking from './pages/Booking';
 import MyAppointments from './pages/MyAppointments';
 import Navbar from './components/Navbar';
+import DoctorDashboard from './pages/DoctorDashboard';
 
 const theme = createTheme({
   direction: 'rtl',
@@ -39,6 +40,7 @@ function App() {
             <Route path="/doctor/:id" element={<DoctorDetails />} />
             <Route path="/book/:doctorId" element={<Booking />} />
             <Route path="/appointments" element={<MyAppointments />} />
+            <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
           </Routes>
         </Router>
       </AuthProvider>

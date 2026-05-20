@@ -43,7 +43,7 @@ export default function DoctorCard({ doctor }) {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <Rating value={doctor.rating || 0} precision={0.1} readOnly size="small" />
                     <Typography variant="body2" sx={{ ml: 1 }}>
-                        {doctor.rating} ({doctor.reviewsCount} تقييم)
+                        {doctor.rating || 0} ({doctor.reviewsCount || 0} reviews)
                     </Typography>
                 </Box>
 
