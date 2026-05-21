@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect } from 'react';
 import { 
   auth, 
@@ -10,7 +11,7 @@ import {
   onAuthStateChanged,
   updateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, addDoc } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -20,46 +21,68 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
-  const [userRole, setUserRole] = useState(null); // 'patient' أو 'doctor'
+  const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // تسجيل حساب جديد
-  async function signup(email, password, name, role = 'patient') {
+  // Sign up with role
+  async function signup(email, password, name, role = 'patient', extraData = {}) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
-    // تحديث الاسم
+
     await updateProfile(user, { displayName: name });
-    
-    // حفظ بيانات إضافية في Firestore
+
+    // Save user data
     await setDoc(doc(db, 'users', user.uid), {
       name: name,
       email: email,
       role: role,
+      phone: extraData.phone || '',
       createdAt: new Date().toISOString(),
-      phone: ''
+      ...extraData
     });
-    
+
+    // If doctor, create doctor profile
+    if (role === 'doctor') {
+      await setDoc(doc(db, 'doctors', user.uid), {
+        id: user.uid,
+        name: `Dr. ${name}`,
+        email: email,
+        specialty: extraData.specialty || 'General',
+        rating: 0,
+        reviewsCount: 0,
+        image: extraData.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400',
+        location: extraData.location || 'Cairo',
+        price: extraData.price || 200,
+        bio: extraData.bio || `Dr. ${name} is a specialist in ${extraData.specialty || 'General Medicine'}.`,
+        availability: {
+          saturday: ['09:00', '10:00', '11:00', '12:00'],
+          sunday: ['09:00', '10:00', '11:00', '14:00', '15:00'],
+          monday: ['10:00', '11:00', '12:00'],
+          tuesday: ['09:00', '10:00', '11:00', '12:00', '14:00'],
+          wednesday: ['09:00', '10:00', '11:00'],
+          thursday: ['10:00', '11:00', '12:00', '14:00'],
+          friday: []
+        },
+        createdAt: new Date().toISOString()
+      });
+    }
+
     return user;
   }
 
-  // تسجيل الدخول
   function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);
   }
 
-  // تسجيل الخروج
   function logout() {
     return signOut(auth);
   }
 
-  // مراقبة حالة المستخدم
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
-      
+
       if (user) {
-        // جلب دور المستخدم من Firestore
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           setUserRole(userDoc.data().role);
@@ -67,7 +90,7 @@ export function AuthProvider({ children }) {
       } else {
         setUserRole(null);
       }
-      
+
       setLoading(false);
     });
 
