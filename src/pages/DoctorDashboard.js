@@ -40,7 +40,6 @@ import MuiAlert from '@mui/material/Alert';
 import {
   CalendarMonth,
   AccessTime,
-  Person,
   CheckCircle,
   Cancel,
   Pending,
@@ -48,13 +47,12 @@ import {
   People,
   Search,
   Schedule,
-  MoreVert,
 } from '@mui/icons-material';
 
 export default function DoctorDashboard() {
   const { currentUser, userRole } = useAuth();
-  const { t, language } = useLanguage();
-  const navigate = useNavigate();
+  const {  language } = useLanguage();
+  
   const isRTL = language === 'ar';
 
   const [activeTab, setActiveTab] = useState(0);

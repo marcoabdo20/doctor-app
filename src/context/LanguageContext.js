@@ -101,12 +101,10 @@ const translations = {
     pendingAppointments: 'مواعيد معلقة',
     confirmedAppointments: 'مواعيد مؤكدة',
     completedAppointments: 'مواعيد مكتملة',
-    confirm: 'تأكيد',
     reject: 'رفض',
     markComplete: 'تحديد كمكتمل',
 
     // Reviews
-    writeReview: 'كتابة تقييم',
     yourRating: 'تقييمك',
     yourReview: 'مراجعتك',
     submitReview: 'إرسال التقييم',
@@ -224,12 +222,10 @@ const translations = {
     pendingAppointments: 'Pending Appointments',
     confirmedAppointments: 'Confirmed Appointments',
     completedAppointments: 'Completed Appointments',
-    confirm: 'Confirm',
     reject: 'Reject',
     markComplete: 'Mark Complete',
 
     // Reviews
-    writeReview: 'Write a Review',
     yourRating: 'Your Rating',
     yourReview: 'Your Review',
     submitReview: 'Submit Review',

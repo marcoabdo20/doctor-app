@@ -17,7 +17,6 @@ import {
   Rating,
   Chip,
   Button,
-  Divider,
   CircularProgress,
   Alert,
   Tabs,
@@ -27,8 +26,6 @@ import {
   LocationOn,
   AttachMoney,
   AccessTime,
-  CalendarMonth,
-  Star,
   ArrowBack,
 } from '@mui/icons-material';
 
@@ -78,23 +75,23 @@ export default function DoctorDetails() {
     return days[date.getDay()];
   };
 
-  const getNext7Days = () => {
-    const days = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      days.push({
-        value: date.toISOString().split('T')[0],
-        label: date.toLocaleDateString('en-US', {
-          weekday: 'long',
-          month: 'short',
-          day: 'numeric',
-        }),
-      });
-    }
-    return days;
-  };
+  // const getNext7Days = () => {
+  //   const days = [];
+  //   const today = new Date();
+  //   for (let i = 0; i < 7; i++) {
+  //     const date = new Date(today);
+  //     date.setDate(today.getDate() + i);
+  //     days.push({
+  //       value: date.toISOString().split('T')[0],
+  //       label: date.toLocaleDateString('en-US', {
+  //         weekday: 'long',
+  //         month: 'short',
+  //         day: 'numeric',
+  //       }),
+  //     });
+  //   }
+  //   return days;
+  // };
 
   if (loading) {
     return (

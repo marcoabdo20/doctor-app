@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase/config';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -8,16 +7,14 @@ import {
   Typography,
   Paper,
   Button,
-  TextField,
   Chip,
   Grid,
   Switch,
   FormControlLabel,
   Alert,
   Divider,
-  IconButton
 } from '@mui/material';
-import { AccessTime, Save, Add, Delete, Schedule } from '@mui/icons-material';
+import {Save, Add, Delete, Schedule } from '@mui/icons-material';
 
 const daysEn = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const daysAr = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];

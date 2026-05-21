@@ -845,7 +845,6 @@ export default function Home() {
   const { currentUser, userRole } = useAuth();
   const { t, language }          = useLanguage();
   const navigate = useNavigate();
-  const theme    = useTheme();
   const isRTL    = language === 'ar';
 
   const features = [
