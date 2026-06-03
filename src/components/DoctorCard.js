@@ -14,36 +14,35 @@ import {
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 
 const T = {
-  teal50:  '#E8F5F0',
+  teal50: '#E8F5F0',
   teal100: '#C3E8D8',
   teal400: '#1D9E75',
   teal600: '#0F6E56',
   teal800: '#085041',
-  amber:   '#F59E0B',
-  green:   '#16A34A',
-  neutral50:  '#F7F8FA',
+  amber: '#F59E0B',
+  green: '#16A34A',
+  neutral50: '#F7F8FA',
   neutral100: '#ECEEF2',
   neutral600: '#6B7280',
 };
 
 const SPECIALTY_AR = {
   'General Medicine': 'طب عام',
-  'Cardiology':       'قلب وأوعية دموية',
-  'Dermatology':      'جلدية وتجميل',
-  'Orthopedics':      'جراحة العظام',
-  'Dentistry':        'أسنان وتقويم',
-  'Pediatrics':       'طب الأطفال',
-  'Ophthalmology':    'طب العيون',
-  'Neurology':        'أعصاب',
-  'Psychiatry':       'طب نفسي',
-  'Gynecology':       'نساء وتوليد',
+  'Cardiology': 'قلب وأوعية دموية',
+  'Dermatology': 'جلدية وتجميل',
+  'Orthopedics': 'جراحة العظام',
+  'Dentistry': 'أسنان وتقويم',
+  'Pediatrics': 'طب الأطفال',
+  'Ophthalmology': 'طب العيون',
+  'Neurology': 'أعصاب',
+  'Psychiatry': 'طب نفسي',
+  'Gynecology': 'نساء وتوليد',
 };
 
 // ─── Initials Avatar (shown when no image) ────────────────────────────────────
 
 function InitialsAvatar({ name }) {
   const initials = (name ?? '').trim().slice(0, 2);
-  // Generate a consistent hue from the name string
   const hue = [...(name ?? '')].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 60 + 150;
 
   return (
@@ -83,10 +82,10 @@ function InitialsAvatar({ name }) {
 // ─── DoctorCard ───────────────────────────────────────────────────────────────
 
 export default function DoctorCard({ doctor }) {
-  const navigate     = useNavigate();
+  const navigate = useNavigate();
   const { language } = useLanguage();
-  const isAr         = language === 'ar';
-  const [fav, setFav]       = useState(false);
+  const isAr = language === 'ar';
+  const [fav, setFav] = useState(false);
   const [imgErr, setImgErr] = useState(false);
 
   const specialty = isAr
@@ -106,8 +105,8 @@ export default function DoctorCard({ doctor }) {
         flexDirection: 'column',
         direction: isAr ? 'rtl' : 'ltr',
         cursor: 'pointer',
-        // ── Uniform height: all cards the same regardless of image ──
         height: '100%',
+        width: '100%',
         minHeight: { xs: 420, sm: 460 },
         bgcolor: '#fff',
         transition: 'border-color .22s, box-shadow .22s, transform .22s',
@@ -126,7 +125,6 @@ export default function DoctorCard({ doctor }) {
         sx={{
           position: 'relative',
           width: '100%',
-          // Fixed height so all cards have identical image zones
           height: { xs: 180, sm: 200 },
           flexShrink: 0,
           overflow: 'hidden',
@@ -151,40 +149,6 @@ export default function DoctorCard({ doctor }) {
           />
         ) : (
           <InitialsAvatar name={doctor.name} />
-        )}
-
-        {/* Only show the "Available" pill — never show "Unavailable" */}
-        {doctor.available && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 10,
-              [isAr ? 'left' : 'right']: 10,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              px: 1.25,
-              py: 0.5,
-              borderRadius: 100,
-              fontSize: { xs: 10, sm: 11 },
-              fontWeight: 700,
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              bgcolor: 'rgba(232,245,240,0.95)',
-              color: T.teal800,
-              border: `1px solid ${T.teal100}`,
-            }}
-          >
-            <Box
-              component="span"
-              sx={{
-                width: 6, height: 6, borderRadius: '50%',
-                bgcolor: T.teal400,
-                flexShrink: 0,
-              }}
-            />
-            {isAr ? 'متاح الآن' : 'Available'}
-          </Box>
         )}
 
         {/* Rating pill */}
@@ -216,51 +180,60 @@ export default function DoctorCard({ doctor }) {
       </Box>
 
       {/* ── Body ───────────────────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          px: { xs: '14px', sm: '18px' },
-          pt: { xs: '14px', sm: '16px' },
-          pb: '10px',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Name */}
-        <Typography
-          title={doctor.name}
-          sx={{
-            fontSize: { xs: 13.5, sm: 14.5 },
-            fontWeight: 800,
-            color: 'text.primary',
-            mb: '6px',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            letterSpacing: isAr ? 0 : '-0.2px',
-          }}
-        >
-          {doctor.name}
-        </Typography>
-
-        {/* Specialty badge */}
+      <Box sx={{
+        px: { xs: '14px', sm: '18px' },
+        pt: { xs: '14px', sm: '16px' },
+        pb: '10px',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        
+        {/* Name + Specialty in same row */}
         <Box
           sx={{
-            display: 'inline-flex',
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            bgcolor: T.teal50,
-            color: T.teal600,
-            fontSize: { xs: 10.5, sm: 11 },
-            fontWeight: 700,
-            px: '10px',
-            py: '4px',
-            borderRadius: 100,
             mb: '12px',
-            width: 'fit-content',
-            border: `1px solid ${T.teal100}`,
+            gap: 1,
           }}
         >
-          {specialty}
+          <Typography
+            title={doctor.name}
+            sx={{
+              fontSize: { xs: 13.5, sm: 14.5 },
+              fontWeight: 800,
+              color: 'text.primary',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              letterSpacing: isAr ? 0 : '-0.2px',
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            {doctor.name}
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              bgcolor: T.teal50,
+              color: T.teal600,
+              fontSize: { xs: 10.5, sm: 11 },
+              fontWeight: 700,
+              px: '10px',
+              py: '4px',
+              borderRadius: 100,
+              width: 'fit-content',
+              border: `1px solid ${T.teal100}`,
+              flexShrink: 0,
+            }}
+          >
+            {specialty}
+          </Box>
         </Box>
 
         {/* Divider */}
@@ -308,7 +281,7 @@ export default function DoctorCard({ doctor }) {
           </Typography>
         </Box>
 
-        {/* Mini stats — pushed to bottom with mt: auto */}
+        {/* Mini stats */}
         <Box
           sx={{
             display: 'grid',
@@ -324,7 +297,6 @@ export default function DoctorCard({ doctor }) {
               p: { xs: '8px 6px', sm: '10px 8px' },
               textAlign: 'center',
               border: `1px solid ${T.neutral100}`,
-              // Keep consistent height even when value is zero
               minHeight: 52,
               display: 'flex',
               flexDirection: 'column',
@@ -422,7 +394,7 @@ export default function DoctorCard({ doctor }) {
             border: `1.5px solid ${fav ? '#FDA4AF' : T.neutral100}`,
             borderRadius: '10px',
             flexShrink: 0,
-            color:   fav ? '#E11D48' : T.neutral600,
+            color: fav ? '#E11D48' : T.neutral600,
             bgcolor: fav ? '#FFF1F2' : T.neutral50,
             transition: 'all .2s',
             '&:hover': {
@@ -434,7 +406,7 @@ export default function DoctorCard({ doctor }) {
           }}
         >
           {fav
-            ? <Favorite       sx={{ fontSize: 17 }} />
+            ? <Favorite sx={{ fontSize: 17 }} />
             : <FavoriteBorder sx={{ fontSize: 17 }} />}
         </IconButton>
       </Box>

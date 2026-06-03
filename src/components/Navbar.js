@@ -15,6 +15,7 @@ import {
   Drawer,
   List,
   ListItem,
+  ListItemButton,  // ← ← ← استورد ده
   ListItemIcon,
   ListItemText,
   Divider,
@@ -45,6 +46,7 @@ const T = {
   teal800: '#085041',
   neutral50:  '#F7F8FA',
   neutral100: '#ECEEF2',
+  neutral200: '#D1D5DB',
   neutral300: '#C8CDD8',
   neutral600: '#6B7280',
   shadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06)',
@@ -81,8 +83,8 @@ function Logo({ onClick, isRTL }) {
     >
       <Box
         sx={{
-          width: { xs: 34, sm: 38 },
-          height: { xs: 34, sm: 38 },
+          width: { xs: 32, sm: 38 },
+          height: { xs: 32, sm: 38 },
           background: `linear-gradient(135deg, ${T.teal400} 0%, ${T.teal600} 100%)`,
           borderRadius: '10px',
           display: 'flex',
@@ -92,19 +94,19 @@ function Logo({ onClick, isRTL }) {
           flexShrink: 0,
         }}
       >
-        <MedicalServices sx={{ fontSize: { xs: 18, sm: 20 }, color: '#fff' }} />
+        <MedicalServices sx={{ fontSize: { xs: 16, sm: 20 }, color: '#fff' }} />
       </Box>
-      <Box sx={{ lineHeight: 1 }}>
+      <Box sx={{ lineHeight: 1, display: { xs: 'none', sm: 'block' } }}>
         <Typography
           sx={{
             fontWeight: 800,
-            fontSize: { xs: 17, sm: 19 },
+            fontSize: { xs: 16, sm: 19 },
             color: T.teal600,
             lineHeight: 1.1,
             letterSpacing: isRTL ? 0 : '-0.3px',
           }}
         >
-          طبيبك
+          {isRTL ? 'طبيبك' : 'Tabibak'}
         </Typography>
         <Typography
           sx={{
@@ -112,7 +114,7 @@ function Logo({ onClick, isRTL }) {
             color: T.neutral600,
             fontWeight: 500,
             letterSpacing: '0.04em',
-            display: { xs: 'none', sm: 'block' },
+            display: { xs: 'none', md: 'block' },
           }}
         >
           {isRTL ? 'رعاية صحية متكاملة' : 'Complete Healthcare'}
@@ -140,6 +142,7 @@ function NavLink({ label, active, onClick }) {
         border: active ? `1.5px solid ${T.teal100}` : '1.5px solid transparent',
         minWidth: 0,
         transition: 'all .18s',
+        whiteSpace: 'nowrap',
         '&:hover': {
           bgcolor: T.teal50,
           color: T.teal600,
@@ -152,24 +155,20 @@ function NavLink({ label, active, onClick }) {
   );
 }
 
-// ─── LangToggle ───────────────────────────────────────────────────────────────
+// ─── LangToggle ─────────────────────────────────────────────────────────────
 
 function LangToggle({ language, onClick }) {
   return (
-    <Button
+    <IconButton
       onClick={onClick}
-      startIcon={<LanguageIcon sx={{ fontSize: '15px !important', opacity: 0.8 }} />}
+      aria-label="Toggle language"
       sx={{
-        px: { xs: 1.25, sm: 1.5 },
-        py: 0.75,
+        width: 36,
+        height: 36,
         borderRadius: '10px',
-        fontSize: { xs: 11, sm: 12 },
-        fontWeight: 700,
-        color: T.neutral600,
         border: `1.5px solid ${T.neutral100}`,
         bgcolor: T.neutral50,
-        minWidth: 0,
-        letterSpacing: '0.03em',
+        color: T.neutral600,
         transition: 'all .18s',
         '&:hover': {
           border: `1.5px solid ${T.teal400}`,
@@ -178,8 +177,16 @@ function LangToggle({ language, onClick }) {
         },
       }}
     >
-      {language === 'ar' ? 'EN' : 'عر'}
-    </Button>
+      <Typography
+        sx={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.03em',
+        }}
+      >
+        {language === 'ar' ? 'EN' : 'ع'}
+      </Typography>
+    </IconButton>
   );
 }
 
@@ -310,24 +317,24 @@ export default function Navbar() {
             sx={{
               justifyContent: 'space-between',
               minHeight: { xs: 56, sm: 64 },
-              px: { xs: 2, sm: 3, md: 5, lg: 6 },
-              gap: { xs: 1, sm: 1.5 },
+              px: { xs: 1.5, sm: 2, md: 3, lg: 4 },
+              gap: { xs: 0.5, sm: 1, md: 2 },
               direction: isRTL ? 'rtl' : 'ltr',
             }}
           >
             {/* Logo */}
             <Logo onClick={() => navigate('/')} isRTL={isRTL} />
 
-            {/* Desktop nav */}
+            {/* Desktop nav - centered */}
             {!isMobile && (
               <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 0.5,
-                  mx: { sm: 2, md: 3 },
                   flex: 1,
                   justifyContent: 'center',
+                  mx: { sm: 1, md: 2, lg: 3 },
                 }}
               >
                 <NavLink
@@ -357,34 +364,34 @@ export default function Navbar() {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: { xs: 0.75, sm: 1 },
+                gap: { xs: 0.5, sm: 0.75, md: 1 },
                 flexShrink: 0,
-                // On desktop, push to end
-                ml: isMobile ? 'auto' : 0,
               }}
             >
               <LangToggle language={language} onClick={toggleLanguage} />
 
               {currentUser ? (
                 <>
-                  {/* Notifications */}
-                  <NavIconBtn label={isRTL ? 'الإشعارات' : 'Notifications'}>
-                    <Badge
-                      badgeContent={0}
-                      color="error"
-                      sx={{ '& .MuiBadge-badge': { fontSize: 9, minWidth: 14, height: 14 } }}
-                    >
-                      <Notifications sx={{ fontSize: 18 }} />
-                    </Badge>
-                  </NavIconBtn>
+                  {/* Notifications - hidden on small mobile */}
+                  <Box sx={{ display: { xs: 'none', sm: 'flex' } }}>
+                    <NavIconBtn label={isRTL ? 'الإشعارات' : 'Notifications'}>
+                      <Badge
+                        badgeContent={0}
+                        color="error"
+                        sx={{ '& .MuiBadge-badge': { fontSize: 9, minWidth: 14, height: 14 } }}
+                      >
+                        <Notifications sx={{ fontSize: 18 }} />
+                      </Badge>
+                    </NavIconBtn>
+                  </Box>
 
-                  {/* Avatar – desktop: opens dropdown; mobile: opens drawer */}
+                  {/* Avatar */}
                   <UserAvatar
                     displayName={currentUser.displayName}
                     onClick={isMobile ? () => setDrawerOpen(true) : handleMenuOpen}
                   />
 
-                  {/* Mobile hamburger (additional trigger) */}
+                  {/* Mobile menu button */}
                   {isMobile && (
                     <NavIconBtn
                       label={isRTL ? 'القائمة' : 'Menu'}
@@ -408,29 +415,31 @@ export default function Navbar() {
                         horizontal: isRTL ? 'left' : 'right',
                         vertical: 'bottom',
                       }}
-                      PaperProps={{
-                        sx: {
-                          mt: 1.25,
-                          minWidth: 220,
-                          borderRadius: '14px',
-                          border: `1px solid ${T.neutral100}`,
-                          boxShadow: T.shadowMd,
-                          direction: isRTL ? 'rtl' : 'ltr',
-                          overflow: 'visible',
-                          '&::before': {
-                            content: '""',
-                            display: 'block',
-                            position: 'absolute',
-                            top: -6,
-                            [isRTL ? 'left' : 'right']: 16,
-                            width: 12,
-                            height: 12,
-                            bgcolor: 'background.paper',
+                      slotProps={{  // ← ← ← استخدم slotProps بدل PaperProps
+                        paper: {
+                          sx: {
+                            mt: 1.25,
+                            minWidth: 220,
+                            borderRadius: '14px',
                             border: `1px solid ${T.neutral100}`,
-                            borderRight: 'none',
-                            borderBottom: 'none',
-                            transform: 'rotate(45deg)',
-                            zIndex: 0,
+                            boxShadow: T.shadowMd,
+                            direction: isRTL ? 'rtl' : 'ltr',
+                            overflow: 'visible',
+                            '&::before': {
+                              content: '""',
+                              display: 'block',
+                              position: 'absolute',
+                              top: -6,
+                              [isRTL ? 'left' : 'right']: 16,
+                              width: 12,
+                              height: 12,
+                              bgcolor: 'background.paper',
+                              border: `1px solid ${T.neutral100}`,
+                              borderRight: 'none',
+                              borderBottom: 'none',
+                              transform: 'rotate(45deg)',
+                              zIndex: 0,
+                            },
                           },
                         },
                       }}
@@ -511,22 +520,20 @@ export default function Navbar() {
                 </>
               ) : (
                 /* Logged-out CTA buttons */
-                <Box sx={{ display: 'flex', gap: { xs: 0.75, sm: 1 } }}>
+                <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 0.75, md: 1 } }}>
                   <Button
                     variant="outlined"
                     onClick={() => navigate('/login')}
-                    startIcon={
-                      !isMobile ? <Login sx={{ fontSize: '15px !important' }} /> : undefined
-                    }
                     sx={{
                       borderRadius: '10px',
-                      fontSize: { xs: 11.5, sm: 12 },
+                      fontSize: { xs: 11, sm: 12 },
                       fontWeight: 700,
-                      px: { xs: 1.5, sm: 2 },
-                      py: 0.8,
+                      px: { xs: 1.25, sm: 1.5, md: 2 },
+                      py: 0.75,
                       border: `1.5px solid ${T.neutral200}`,
                       color: T.neutral600,
                       bgcolor: T.neutral50,
+                      minWidth: 0,
                       transition: 'all .18s',
                       '&:hover': {
                         border: `1.5px solid ${T.teal400}`,
@@ -541,15 +548,13 @@ export default function Navbar() {
                   <Button
                     variant="contained"
                     onClick={() => navigate('/signup')}
-                    startIcon={
-                      !isMobile ? <PersonAdd sx={{ fontSize: '15px !important' }} /> : undefined
-                    }
                     sx={{
                       borderRadius: '10px',
-                      fontSize: { xs: 11.5, sm: 12 },
+                      fontSize: { xs: 11, sm: 12 },
                       fontWeight: 700,
-                      px: { xs: 1.5, sm: 2 },
-                      py: 0.8,
+                      px: { xs: 1.25, sm: 1.5, md: 2 },
+                      py: 0.75,
+                      minWidth: 0,
                       background: `linear-gradient(135deg, ${T.teal400} 0%, ${T.teal600} 100%)`,
                       color: '#fff',
                       boxShadow: `0 2px 8px ${T.teal400}44`,
@@ -572,82 +577,91 @@ export default function Navbar() {
 
       {/* ── Mobile Drawer ─────────────────────────────────────────────────── */}
       <Drawer
-        anchor="bottom"
+        anchor={isRTL ? 'left' : 'right'}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: '20px 20px 0 0',
-            px: { xs: 2, sm: 3 },
-            pb: { xs: 3, sm: 4 },
-            pt: 1.5,
-            direction: isRTL ? 'rtl' : 'ltr',
-            maxHeight: '80vh',
+        slotProps={{  // ← ← ← استخدم slotProps
+          paper: {
+            sx: {
+              width: { xs: '80vw', sm: 320 },
+              maxWidth: 360,
+              direction: isRTL ? 'rtl' : 'ltr',
+            },
           },
         }}
       >
-        {/* Drag handle */}
+        {/* Drawer header */}
         <Box
           sx={{
-            width: 40,
-            height: 4,
-            borderRadius: 2,
-            bgcolor: T.neutral100,
-            mx: 'auto',
-            mb: 2,
+            p: { xs: 2, sm: 2.5 },
+            borderBottom: `1px solid ${T.neutral100}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
-        />
+        >
+          <Logo onClick={() => { navigate('/'); setDrawerOpen(false); }} isRTL={isRTL} />
+          <IconButton
+            onClick={() => setDrawerOpen(false)}
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              border: `1.5px solid ${T.neutral100}`,
+              color: T.neutral600,
+            }}
+          >
+            <MenuIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
 
         {/* User info */}
         {currentUser && (
-          <>
+          <Box
+            sx={{
+              p: { xs: 2, sm: 2.5 },
+              bgcolor: T.teal50,
+              mx: { xs: 1.5, sm: 2 },
+              mt: { xs: 1.5, sm: 2 },
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
             <Box
               sx={{
+                width: 44,
+                height: 44,
+                borderRadius: '12px',
+                background: `linear-gradient(135deg, ${T.teal400} 0%, ${T.teal600} 100%)`,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1.5,
-                p: 1.5,
-                bgcolor: T.teal50,
-                borderRadius: '14px',
-                mb: 1.5,
+                justifyContent: 'center',
+                fontSize: 18,
+                fontWeight: 800,
+                color: '#fff',
+                flexShrink: 0,
               }}
             >
-              <Box
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: '12px',
-                  background: `linear-gradient(135deg, ${T.teal400} 0%, ${T.teal600} 100%)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 18,
-                  fontWeight: 800,
-                  color: '#fff',
-                  flexShrink: 0,
-                }}
-              >
-                {currentUser.displayName?.charAt(0).toUpperCase() ?? '?'}
-              </Box>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography noWrap sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary' }}>
-                  {currentUser.displayName}
-                </Typography>
-                <Typography noWrap sx={{ fontSize: 11.5, color: T.neutral600 }}>
-                  {currentUser.email}
-                </Typography>
-              </Box>
+              {currentUser.displayName?.charAt(0).toUpperCase() ?? '?'}
             </Box>
-            <Divider sx={{ mb: 1.5, borderColor: T.neutral100 }} />
-          </>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography noWrap sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary' }}>
+                {currentUser.displayName}
+              </Typography>
+              <Typography noWrap sx={{ fontSize: 11.5, color: T.neutral600 }}>
+                {currentUser.email}
+              </Typography>
+            </Box>
+          </Box>
         )}
 
         {/* Nav list */}
-        <List disablePadding>
+        <List sx={{ px: { xs: 1.5, sm: 2 }, py: 1 }}>
           {drawerItems.map((item) => (
-            <ListItem
+            <ListItemButton  // ← ← ← ListItemButton بدل ListItem button
               key={item.label}
-              button
               onClick={item.onClick}
               sx={{
                 borderRadius: '12px',
@@ -671,27 +685,31 @@ export default function Navbar() {
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontSize: 13.5,
-                  fontWeight: 600,
-                  color: item.active ? T.teal600 : 'text.secondary',
-                }}
-              />
-            </ListItem>
+              {/* ← ← ← Typography منفصل بدل primaryTypographyProps */}
+              <ListItemText>
+                <Typography
+                  sx={{
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    color: item.active ? T.teal600 : 'text.secondary',
+                  }}
+                >
+                  {item.label}
+                </Typography>
+              </ListItemText>
+            </ListItemButton>
           ))}
 
           {currentUser && (
             <>
-              <Divider sx={{ my: 1.25, borderColor: T.neutral100 }} />
-              <ListItem
-                button
+              <Divider sx={{ my: 1.25, borderColor: T.neutral100, mx: 1 }} />
+              <ListItemButton  // ← ← ← ListItemButton
                 onClick={handleLogout}
                 sx={{
                   borderRadius: '12px',
                   py: 1.25,
                   px: 1.75,
+                  mx: 0.5,
                   transition: 'all .15s',
                   '&:hover': { bgcolor: '#FFF0F0' },
                 }}
@@ -699,15 +717,18 @@ export default function Navbar() {
                 <ListItemIcon sx={{ minWidth: 0, [isRTL ? 'ml' : 'mr']: 1.75 }}>
                   <Logout sx={{ fontSize: 19, color: 'error.main' }} />
                 </ListItemIcon>
-                <ListItemText
-                  primary={t('logout')}
-                  primaryTypographyProps={{
-                    fontSize: 13.5,
-                    fontWeight: 600,
-                    color: 'error.main',
-                  }}
-                />
-              </ListItem>
+                <ListItemText>
+                  <Typography
+                    sx={{
+                      fontSize: 13.5,
+                      fontWeight: 600,
+                      color: 'error.main',
+                    }}
+                  >
+                    {t('logout')}
+                  </Typography>
+                </ListItemText>
+              </ListItemButton>
             </>
           )}
         </List>
