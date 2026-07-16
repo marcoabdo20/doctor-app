@@ -174,75 +174,77 @@ function SearchPanel({ searchTerm, setSearchTerm, selectedSpecialty, setSelected
             '&.Mui-focused fieldset': { borderColor: C.primary, borderWidth: '1.5px' },
           },
         }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position={isRTL ? 'end' : 'start'}>
-              <Search sx={{ color: C.neutral400, fontSize: { xs: 18, sm: 20 } }} />
-            </InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position={isRTL ? 'end' : 'start'}>
+                <Search sx={{ color: C.neutral400, fontSize: { xs: 18, sm: 20 } }} />
+              </InputAdornment>
+            ),
+          },
         }}
       />
 
-    {/* Specialty chips — custom Box for better RTL/LTR control */}
-<Box sx={{
-  display: 'flex',
-  flexWrap: { xs: 'nowrap', sm: 'wrap' },
-  overflowX: { xs: 'auto', sm: 'visible' },
-  gap: { xs: 0.75, sm: 1 },
-  pb: { xs: 0.5, sm: 0 },
-  '&::-webkit-scrollbar': { display: 'none' },
-  scrollbarWidth: 'none',
-}}>
-  {SPECIALTIES.map((s) => {
-    const active = selectedSpecialty === s.en;
-    return (
-      <Box
-        key={s.en}
-        onClick={() => setSelectedSpecialty(s.en)}
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',                    // ← مسافة بين الأيقونة والنص
-          flexDirection: isRTL ? 'row-reverse' : 'row',  // ← ← ← حسب اللغة
-          px: { xs: '10px', sm: '12px' },
-          py: { xs: '6px', sm: '7px' },
-          borderRadius: 100,
-          fontSize: { xs: 11, sm: 12 },
-          fontWeight: 600,
-          cursor: 'pointer',
-          flexShrink: 0,
-          userSelect: 'none',
-          bgcolor: active ? C.primary : C.neutral50,
-          color: active ? '#fff' : C.neutral600,
-          border: `1.5px solid ${active ? C.primary : C.neutral100}`,
-          transition: 'all .18s ease',
-          '&:hover': {
-            bgcolor: active ? '#0d3b6e' : C.primaryLt,
-            borderColor: C.primary,
-            color: active ? '#fff' : C.primary,
-            transform: 'translateY(-1px)',
-            boxShadow: active ? '0 4px 12px rgba(15,76,129,0.3)' : 'none',
-          },
-        }}
-      >
-        {/* الأيقونة */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          color: active ? 'rgba(255,255,255,0.9)' : C.primary,
-          fontSize: { xs: 13, sm: 14 },
-        }}>
-          {s.icon}
-        </Box>
-        
-        {/* النص */}
-        <Box component="span">
-          {isRTL ? s.ar : s.en}
-        </Box>
+      {/* Specialty chips — custom Box for better RTL/LTR control */}
+      <Box sx={{
+        display: 'flex',
+        flexWrap: { xs: 'nowrap', sm: 'wrap' },
+        overflowX: { xs: 'auto', sm: 'visible' },
+        gap: { xs: 0.75, sm: 1 },
+        pb: { xs: 0.5, sm: 0 },
+        '&::-webkit-scrollbar': { display: 'none' },
+        scrollbarWidth: 'none',
+      }}>
+        {SPECIALTIES.map((s) => {
+          const active = selectedSpecialty === s.en;
+          return (
+            <Box
+              key={s.en}
+              onClick={() => setSelectedSpecialty(s.en)}
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',                    // ← مسافة بين الأيقونة والنص
+                flexDirection: isRTL ? 'row-reverse' : 'row',  // ← ← ← حسب اللغة
+                px: { xs: '10px', sm: '12px' },
+                py: { xs: '6px', sm: '7px' },
+                borderRadius: 100,
+                fontSize: { xs: 11, sm: 12 },
+                fontWeight: 600,
+                cursor: 'pointer',
+                flexShrink: 0,
+                userSelect: 'none',
+                bgcolor: active ? C.primary : C.neutral50,
+                color: active ? '#fff' : C.neutral600,
+                border: `1.5px solid ${active ? C.primary : C.neutral100}`,
+                transition: 'all .18s ease',
+                '&:hover': {
+                  bgcolor: active ? '#0d3b6e' : C.primaryLt,
+                  borderColor: C.primary,
+                  color: active ? '#fff' : C.primary,
+                  transform: 'translateY(-1px)',
+                  boxShadow: active ? '0 4px 12px rgba(15,76,129,0.3)' : 'none',
+                },
+              }}
+            >
+              {/* الأيقونة */}
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                color: active ? 'rgba(255,255,255,0.9)' : C.primary,
+                fontSize: { xs: 13, sm: 14 },
+              }}>
+                {s.icon}
+              </Box>
+
+              {/* النص */}
+              <Box component="span">
+                {isRTL ? s.ar : s.en}
+              </Box>
+            </Box>
+          );
+        })}
       </Box>
-    );
-  })}
-</Box>
     </Paper>
   );
 }

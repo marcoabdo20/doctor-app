@@ -67,14 +67,14 @@ export default function Signup() {
 
   const steps = role === 'doctor'
     ? [
-        isRTL ? 'نوع الحساب' : 'Account Type',
-        isRTL ? 'المعلومات الشخصية' : 'Personal Info',
-        isRTL ? 'المعلومات المهنية' : 'Professional Info',
-      ]
+      isRTL ? 'نوع الحساب' : 'Account Type',
+      isRTL ? 'المعلومات الشخصية' : 'Personal Info',
+      isRTL ? 'المعلومات المهنية' : 'Professional Info',
+    ]
     : [
-        isRTL ? 'نوع الحساب' : 'Account Type',
-        isRTL ? 'المعلومات الشخصية' : 'Personal Info',
-      ];
+      isRTL ? 'نوع الحساب' : 'Account Type',
+      isRTL ? 'المعلومات الشخصية' : 'Personal Info',
+    ];
 
   const handleNext = () => {
     if (activeStep === 0 && !role) {
@@ -311,14 +311,17 @@ export default function Signup() {
                     value={password} onChange={(e) => setPassword(e.target.value)}
                     helperText={isRTL ? '6 أحرف على الأقل' : 'Minimum 6 characters'}
                     inputProps={{ dir: 'ltr' }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position={isRTL ? 'start' : 'end'}>
-                          <IconButton onClick={() => setShowPassword(!showPassword)} size="small">
-                            {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        dir: 'ltr',
+                        endAdornment: (
+                          <InputAdornment position={isRTL ? 'start' : 'end'}>
+                            <IconButton onClick={() => setShowPassword(!showPassword)} size="small">
+                              {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                     sx={inputSx}
                   />

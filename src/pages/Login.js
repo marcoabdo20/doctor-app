@@ -152,12 +152,14 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position={isRTL ? 'end' : 'start'}>
-                      <Email sx={{ color: 'text.disabled', fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position={isRTL ? 'end' : 'start'}>
+                        <Email sx={{ color: 'text.disabled', fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
                 inputProps={{ dir: 'ltr' }}
                 sx={{
@@ -178,25 +180,27 @@ export default function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position={isRTL ? 'end' : 'start'}>
-                      <Lock sx={{ color: 'text.disabled', fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position={isRTL ? 'start' : 'end'}>
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge={isRTL ? 'start' : 'end'}
-                        size="small"
-                      >
-                        {showPassword
-                          ? <VisibilityOff sx={{ fontSize: 18 }} />
-                          : <Visibility sx={{ fontSize: 18 }} />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position={isRTL ? 'end' : 'start'}>
+                        <Lock sx={{ color: 'text.disabled', fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position={isRTL ? 'start' : 'end'}>
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge={isRTL ? 'start' : 'end'}
+                          size="small"
+                        >
+                          {showPassword
+                            ? <VisibilityOff sx={{ fontSize: 18 }} />
+                            : <Visibility sx={{ fontSize: 18 }} />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
                 }}
                 inputProps={{ dir: 'ltr' }}
                 sx={{

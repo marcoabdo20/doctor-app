@@ -51,8 +51,8 @@ import {
 
 export default function DoctorDashboard() {
   const { currentUser, userRole } = useAuth();
-  const {  language } = useLanguage();
-  
+  const { language } = useLanguage();
+
   const isRTL = language === 'ar';
 
   const [activeTab, setActiveTab] = useState(0);
@@ -122,10 +122,10 @@ export default function DoctorDashboard() {
   };
 
   const statusConfig = {
-    pending:   { color: 'warning', label: isRTL ? 'معلق' : 'Pending',    icon: <Pending sx={{ fontSize: 16 }} /> },
-    confirmed: { color: 'success', label: isRTL ? 'مؤكد' : 'Confirmed',  icon: <CheckCircle sx={{ fontSize: 16 }} /> },
-    completed: { color: 'info',    label: isRTL ? 'مكتمل' : 'Completed', icon: <CheckCircle sx={{ fontSize: 16 }} /> },
-    cancelled: { color: 'error',   label: isRTL ? 'ملغى' : 'Cancelled',  icon: <Cancel sx={{ fontSize: 16 }} /> },
+    pending: { color: 'warning', label: isRTL ? 'معلق' : 'Pending', icon: <Pending sx={{ fontSize: 16 }} /> },
+    confirmed: { color: 'success', label: isRTL ? 'مؤكد' : 'Confirmed', icon: <CheckCircle sx={{ fontSize: 16 }} /> },
+    completed: { color: 'info', label: isRTL ? 'مكتمل' : 'Completed', icon: <CheckCircle sx={{ fontSize: 16 }} /> },
+    cancelled: { color: 'error', label: isRTL ? 'ملغى' : 'Cancelled', icon: <Cancel sx={{ fontSize: 16 }} /> },
   };
 
   const filteredAppointments = appointments.filter((app) => {
@@ -134,16 +134,16 @@ export default function DoctorDashboard() {
       app.patientEmail?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTab =
       activeTab === 0 ? ['pending', 'confirmed'].includes(app.status) :
-      activeTab === 1 ? app.status === 'completed' :
-      activeTab === 2 ? app.status === 'cancelled' : true;
+        activeTab === 1 ? app.status === 'completed' :
+          activeTab === 2 ? app.status === 'cancelled' : true;
     return matchesSearch && matchesTab;
   });
 
   const statCards = [
-    { icon: <People />,      label: isRTL ? 'إجمالي المرضى'  : 'Total Patients',  value: stats.total,     color: '#0f4c81', bg: 'rgba(15,76,129,0.08)' },
-    { icon: <Pending />,     label: isRTL ? 'في الانتظار'    : 'Pending',          value: stats.pending,   color: '#d97706', bg: 'rgba(217,119,6,0.08)' },
-    { icon: <CheckCircle />, label: isRTL ? 'مؤكدة'          : 'Confirmed',        value: stats.confirmed, color: '#059669', bg: 'rgba(5,150,105,0.08)' },
-    { icon: <TrendingUp />,  label: isRTL ? 'مكتملة'         : 'Completed',        value: stats.completed, color: '#0284c7', bg: 'rgba(2,132,199,0.08)'  },
+    { icon: <People />, label: isRTL ? 'إجمالي المرضى' : 'Total Patients', value: stats.total, color: '#0f4c81', bg: 'rgba(15,76,129,0.08)' },
+    { icon: <Pending />, label: isRTL ? 'في الانتظار' : 'Pending', value: stats.pending, color: '#d97706', bg: 'rgba(217,119,6,0.08)' },
+    { icon: <CheckCircle />, label: isRTL ? 'مؤكدة' : 'Confirmed', value: stats.confirmed, color: '#059669', bg: 'rgba(5,150,105,0.08)' },
+    { icon: <TrendingUp />, label: isRTL ? 'مكتملة' : 'Completed', value: stats.completed, color: '#0284c7', bg: 'rgba(2,132,199,0.08)' },
   ];
 
   if (loading) {
@@ -306,12 +306,14 @@ export default function DoctorDashboard() {
                       size="small"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position={isRTL ? 'end' : 'start'}>
-                            <Search sx={{ color: 'text.disabled', fontSize: 20 }} />
-                          </InputAdornment>
-                        ),
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position={isRTL ? 'end' : 'start'}>
+                              <Search sx={{ color: 'text.disabled', fontSize: 20 }} />
+                            </InputAdornment>
+                          ),
+                        },
                       }}
                       sx={{
                         width: { xs: '100%', sm: 280 },
