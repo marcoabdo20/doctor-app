@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useDoctorAppointments } from '../hooks/useDoctorAppointments';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase/config';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import DoctorScheduleSettings from '../components/DoctorScheduleSettings';
 import {
   Container,
@@ -63,23 +63,54 @@ export default function DoctorDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [doctor, setDoctor] = useState(null);
+  const [doctorLoading, setDoctorLoading] = useState(true);
+  const [doctorError, setDoctorError] = useState('');
 
-  const { appointments, stats, loading, updateStatus, refresh } = useDoctorAppointments(currentUser?.uid);
+  const { appointments, stats, loading, error: appointmentsError, updateStatus, refresh } = useDoctorAppointments(currentUser?.uid);
 
   useEffect(() => {
-    async function fetchDoctor() {
-      if (currentUser?.uid) {
-        try {
-          const docRef = doc(db, 'doctors', currentUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) setDoctor({ id: docSnap.id, ...docSnap.data() });
-        } catch (err) {
-          console.error('Error fetching doctor:', err);
-        }
-      }
-    }
     fetchDoctor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
+
+  async function fetchDoctor() {
+    if (!currentUser?.uid) return;
+    try {
+      setDoctorLoading(true);
+      setDoctorError('');
+
+      const docRef = doc(db, 'doctors', currentUser.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setDoctor({ id: docSnap.id, ...docSnap.data() });
+      } else {
+        // No doctor profile yet (e.g. account was created but the doctor
+        // document was never set up). Create a minimal default one so the
+        // schedule settings always have something to work with.
+        const defaultDoctor = {
+          name: currentUser.displayName || '',
+          email: currentUser.email || '',
+          availability: {},
+          breaks: {},
+          timeOff: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        await setDoc(docRef, defaultDoctor);
+        setDoctor({ id: currentUser.uid, ...defaultDoctor });
+      }
+    } catch (err) {
+      console.error('Error fetching/creating doctor profile:', err);
+      setDoctorError(
+        isRTL
+          ? 'تعذر تحميل بيانات الطبيب. تأكد من صلاحيات الوصول (Firestore rules) وحاول مرة أخرى.'
+          : 'Could not load the doctor profile. Check Firestore access rules and try again.'
+      );
+    } finally {
+      setDoctorLoading(false);
+    }
+  }
 
   if (!currentUser || userRole === null) {
     return (
@@ -292,6 +323,12 @@ export default function DoctorDashboard() {
               {/* ── Appointments Tab ── */}
               {settingsTab === 0 && (
                 <Box sx={{ p: { xs: 2, sm: 3 } }}>
+
+                  {appointmentsError && (
+                    <Alert severity="error" sx={{ mb: 2 }} onClose={refresh}>
+                      {isRTL ? 'تعذر تحميل المواعيد: ' : 'Could not load appointments: '}{appointmentsError}
+                    </Alert>
+                  )}
 
                   {/* Search + Sub-tabs */}
                   <Box sx={{
@@ -506,12 +543,33 @@ export default function DoctorDashboard() {
               )}
 
               {/* ── Schedule Tab ── */}
-              {settingsTab === 1 && doctor && (
+              {settingsTab === 1 && (
                 <Box sx={{ p: { xs: 2, sm: 3 } }}>
-                  <DoctorScheduleSettings
-                    doctor={doctor}
-                    onUpdate={(newSchedule) => setDoctor({ ...doctor, availability: newSchedule })}
-                  />
+                  {doctorLoading && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                      <CircularProgress />
+                    </Box>
+                  )}
+
+                  {!doctorLoading && doctorError && (
+                    <Alert
+                      severity="error"
+                      action={
+                        <Button color="inherit" size="small" onClick={fetchDoctor}>
+                          {isRTL ? 'إعادة المحاولة' : 'Retry'}
+                        </Button>
+                      }
+                    >
+                      {doctorError}
+                    </Alert>
+                  )}
+
+                  {!doctorLoading && !doctorError && doctor && (
+                    <DoctorScheduleSettings
+                      doctor={doctor}
+                      onUpdate={(updated) => setDoctor({ ...doctor, ...updated })}
+                    />
+                  )}
                 </Box>
               )}
             </Paper>

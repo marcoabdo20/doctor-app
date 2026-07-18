@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase/config';
-import { collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, addDoc, arrayRemove } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -57,8 +57,6 @@ export default function MyAppointments() {
       setLoading(true);
       setError('');
 
-      console.log('Fetching appointments for patient:', currentUser.uid);
-
       const appointmentsRef = collection(db, 'appointments');
       const q = query(
         appointmentsRef,
@@ -66,14 +64,12 @@ export default function MyAppointments() {
       );
 
       const snapshot = await getDocs(q);
-      console.log('Found appointments:', snapshot.size);
 
       const apps = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
 
-      // Sort manually since we can't use orderBy with where on different fields
       apps.sort((a, b) => {
         const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
         const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
@@ -89,13 +85,24 @@ export default function MyAppointments() {
     }
   }
 
-  async function cancelAppointment(appointmentId) {
+  async function cancelAppointment(appointment) {
     try {
-      const docRef = doc(db, 'appointments', appointmentId);
+      const docRef = doc(db, 'appointments', appointment.id);
       await updateDoc(docRef, { 
         status: 'cancelled', 
         updatedAt: new Date() 
       });
+
+      // Free the slot back up so other patients can book it
+      try {
+        const slotDocId = `${appointment.doctorId}_${appointment.date}`;
+        await updateDoc(doc(db, 'bookedSlots', slotDocId), {
+          times: arrayRemove(appointment.time),
+        });
+      } catch (slotErr) {
+        console.error('Error freeing booked slot:', slotErr);
+      }
+
       setCancelDialog(null);
       fetchAppointments();
     } catch (err) {
@@ -106,7 +113,6 @@ export default function MyAppointments() {
 
   async function submitReview(appointment) {
     try {
-      // Add review
       await addDoc(collection(db, 'reviews'), {
         patientId: currentUser.uid,
         patientName: currentUser.displayName,
@@ -118,7 +124,6 @@ export default function MyAppointments() {
         createdAt: new Date()
       });
 
-      // Update appointment status
       const docRef = doc(db, 'appointments', appointment.id);
       await updateDoc(docRef, { 
         status: 'reviewed', 
@@ -341,7 +346,7 @@ export default function MyAppointments() {
               <Button 
                 color="error" 
                 variant="contained"
-                onClick={() => cancelAppointment(cancelDialog.id)}
+                onClick={() => cancelAppointment(cancelDialog)}
               >
                 {t('cancelAppointment')}
               </Button>

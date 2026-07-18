@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useBooking } from '../hooks/useBooking';
 import { db } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
+import { getAvailableSlots, isDateBookable } from '../utils/scheduleUtils';
 import {
   Container,
   Paper,
@@ -28,7 +29,7 @@ import { CalendarMonth, AccessTime, Person, CheckCircle, ArrowForward, ArrowBack
 export default function Booking() {
   const { doctorId } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const { t, language } = useLanguage();
   const { bookAppointment, loading: bookingLoading, error: bookingError } = useBooking();
 
@@ -39,17 +40,12 @@ export default function Booking() {
   const [selectedTime, setSelectedTime] = useState('');
   const [notes, setNotes] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
+  const [timesLoading, setTimesLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
   const steps = language === 'ar' 
     ? ['اختر التاريخ', 'اختر الوقت', 'تأكيد الحجز']
     : ['Select Date', 'Select Time', 'Confirm Booking'];
-
-  function getDayName(dateString) {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const date = new Date(dateString);
-    return days[date.getDay()];
-  }
 
   function getNext7Days() {
     const days = [];
@@ -70,6 +66,16 @@ export default function Booking() {
   }
 
   useEffect(() => {
+    // Wait until Firebase has resolved the auth state (important on a
+    // hard page refresh / direct link, where currentUser starts as null
+    // for a moment even if the user is actually logged in).
+    if (authLoading) return;
+
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
     async function fetchDoctor() {
       try {
         const docRef = doc(db, 'doctors', doctorId);
@@ -84,15 +90,34 @@ export default function Booking() {
       }
     }
     fetchDoctor();
-  }, [doctorId]);
+  }, [doctorId, authLoading, currentUser]);
 
+  // Whenever the date or doctor changes, recompute the real bookable slots:
+  // working hours minus break time minus already-booked appointments minus vacation days.
   useEffect(() => {
-    if (selectedDate && doctor) {
-      const dayName = getDayName(selectedDate);
-      const times = doctor.availability?.[dayName] || [];
-      setAvailableTimes(times);
+    async function loadAvailableTimes() {
+      if (!selectedDate || !doctor) return;
+
+      setTimesLoading(true);
       setSelectedTime('');
+
+      try {
+        // One lightweight doc per doctor+date holds just the taken time strings.
+        // No patient names/emails here, so any signed-in patient can safely read it.
+        const slotDocId = `${doctor.id}_${selectedDate}`;
+        const slotSnap = await getDoc(doc(db, 'bookedSlots', slotDocId));
+        const bookedTimes = slotSnap.exists() ? (slotSnap.data().times || []) : [];
+
+        setAvailableTimes(getAvailableSlots(doctor, selectedDate, bookedTimes));
+      } catch (err) {
+        console.error('Error loading available times:', err);
+        // Fall back to schedule-only availability (breaks/vacation still respected)
+        setAvailableTimes(getAvailableSlots(doctor, selectedDate, []));
+      } finally {
+        setTimesLoading(false);
+      }
     }
+    loadAvailableTimes();
   }, [selectedDate, doctor]);
 
   const handleNext = () => setActiveStep((prev) => prev + 1);
@@ -170,23 +195,33 @@ export default function Booking() {
                 </Typography>
 
                 <Grid container spacing={2}>
-                  {getNext7Days().map((day) => (
-                    <Grid item xs={6} sm={4} md={3} key={day.value}>
-                      <Chip
-                        label={day.label}
-                        onClick={() => setSelectedDate(day.value)}
-                        color={selectedDate === day.value ? 'primary' : 'default'}
-                        sx={{ 
-                          width: '100%', 
-                          py: 2,
-                          cursor: 'pointer',
-                          fontSize: '0.9rem',
-                          '&:hover': { bgcolor: 'primary.light', color: 'white' }
-                        }}
-                      />
-                    </Grid>
-                  ))}
+                  {getNext7Days().map((day) => {
+                    const bookable = isDateBookable(doctor, day.value);
+                    return (
+                      <Grid item xs={6} sm={4} md={3} key={day.value}>
+                        <Chip
+                          label={day.label}
+                          onClick={() => bookable && setSelectedDate(day.value)}
+                          color={selectedDate === day.value ? 'primary' : 'default'}
+                          disabled={!bookable}
+                          sx={{
+                            width: '100%',
+                            py: 2,
+                            cursor: bookable ? 'pointer' : 'not-allowed',
+                            fontSize: '0.9rem',
+                            '&:hover': bookable ? { bgcolor: 'primary.light', color: 'white' } : {}
+                          }}
+                        />
+                      </Grid>
+                    );
+                  })}
                 </Grid>
+
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+                  {language === 'ar'
+                    ? 'الأيام غير المتاحة (إجازة أو يوم غير عمل) تظهر باهتة ولا يمكن اختيارها.'
+                    : 'Unavailable days (day off or vacation) are greyed out and cannot be selected.'}
+                </Typography>
               </Box>
             )}
 
@@ -198,7 +233,11 @@ export default function Booking() {
                   {t('selectTime')} - {selectedDate}
                 </Typography>
 
-                {availableTimes.length > 0 ? (
+                {timesLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                    <CircularProgress size={28} />
+                  </Box>
+                ) : availableTimes.length > 0 ? (
                   <Grid container spacing={2}>
                     {availableTimes.map((time) => (
                       <Grid item xs={4} sm={3} md={2} key={time}>

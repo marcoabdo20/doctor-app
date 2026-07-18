@@ -1,24 +1,19 @@
 import { useState } from 'react';
 import { db } from '../firebase/config';
-import { collection, addDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, setDoc, arrayUnion, Timestamp } from 'firebase/firestore';
 
 export function useBooking() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Check if time slot is available
+  // Check if time slot is available by reading the lightweight bookedSlots doc
+  // (doctors/{doctorId}_{date} -> { times: [...] }) instead of querying the
+  // full appointments collection, which patients aren't allowed to list.
   async function isTimeSlotAvailable(doctorId, date, time) {
-    const appointmentsRef = collection(db, 'appointments');
-    const q = query(
-      appointmentsRef,
-      where('doctorId', '==', doctorId),
-      where('date', '==', date),
-      where('time', '==', time),
-      where('status', 'in', ['pending', 'confirmed'])
-    );
-    
-    const snapshot = await getDocs(q);
-    return snapshot.empty; // true if no appointments found
+    const slotDocId = `${doctorId}_${date}`;
+    const slotSnap = await getDoc(doc(db, 'bookedSlots', slotDocId));
+    const bookedTimes = slotSnap.exists() ? (slotSnap.data().times || []) : [];
+    return !bookedTimes.includes(time); // true if not already taken
   }
 
   // Create new appointment
@@ -46,6 +41,23 @@ export function useBooking() {
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       });
+
+      // Mark the slot as taken so other patients can't double-book it.
+      // Non-fatal if this fails; the appointment itself already succeeded.
+      try {
+        const slotDocId = `${appointmentData.doctorId}_${appointmentData.date}`;
+        await setDoc(
+          doc(db, 'bookedSlots', slotDocId),
+          {
+            doctorId: appointmentData.doctorId,
+            date: appointmentData.date,
+            times: arrayUnion(appointmentData.time),
+          },
+          { merge: true }
+        );
+      } catch (slotErr) {
+        console.error('Error updating bookedSlots:', slotErr);
+      }
 
       setLoading(false);
       return { success: true, appointmentId: docRef.id };
